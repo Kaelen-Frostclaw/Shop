@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "title": "Neon Tiger Fursuit Head",
+    "description": "Excellent condition, LED eyes.",
+    "price": 600,
+    "images": ["images/neon-tiger-1.jpg", "images/neon-tiger-2.jpg"],
+    "category": "Fursuits",
+    "condition": "Excellent"
+  },
+  {
+    "id": 2,
+    "title": "Sticker Pack - Retro",
+    "description": "10-piece sticker pack.",
+    "price": 8,
+    "images": ["images/stickers-1.jpg"],
+    "category": "Stickers"
+  }
+]
