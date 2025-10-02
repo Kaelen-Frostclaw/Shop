@@ -2,197 +2,193 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
+  <title>Furry Shop Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #f9fafb;
-      color: #333;
-    }
-
-    header {
-      background: linear-gradient(90deg, #ff9ecd, #9ebfff);
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-
+    body { font-family: Arial, sans-serif; background: #fafafa; margin:0; padding:20px; }
+    h2 { color: #333; }
     .hidden { display: none; }
-
-    /* Login Box */
-    #loginBox {
-      max-width: 400px;
-      margin: 5rem auto;
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-
-    #loginBox input {
-      width: 100%;
-      padding: 0.7rem;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    #loginBox button {
-      width: 100%;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #ff9ecd, #9ebfff);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .tab {
-      flex: 1;
-      padding: 0.8rem;
-      text-align: center;
-      background: #eee;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .tab.active {
-      background: linear-gradient(90deg, #ff9ecd, #9ebfff);
-      color: white;
-    }
-
-    .tab-content {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 0.7rem;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    button.save {
-      padding: 0.8rem 1.2rem;
-      background: linear-gradient(90deg, #9ebfff, #ff9ecd);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
+    .tab { margin-top:20px; }
+    button { padding: 6px 12px; margin: 4px; cursor: pointer; }
+    input, textarea { width:100%; margin:4px 0; padding:8px; }
+    ul { list-style: none; padding:0; }
+    li { background:#fff; padding:10px; margin-bottom:6px; border:1px solid #ddd; border-radius:6px; }
   </style>
 </head>
 <body>
-  <header>🐾 Admin Dashboard</header>
 
-  <!-- Login -->
-  <div id="loginBox">
-    <h2>Login</h2>
-    <p>Enter your GitHub Token:</p>
-    <input type="password" id="tokenInput" placeholder="GitHub Personal Access Token">
-    <button onclick="login()">Login</button>
+  <h2>🐾 Furry Shop Admin Panel</h2>
+
+  <!-- Login Section -->
+  <div id="loginSection">
+    <p>Enter your GitHub Personal Access Token:</p>
+    <input type="password" id="githubToken" placeholder="Paste token here">
+    <button onclick="saveToken()">Login</button>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden container">
-    <div class="tabs">
-      <div class="tab active" onclick="showTab('listings')">Listings</div>
-      <div class="tab" onclick="showTab('reviews')">Reviews</div>
-      <div class="tab" onclick="showTab('sellers')">Sellers</div>
-      <div class="tab" onclick="showTab('settings')">Settings</div>
-    </div>
+  <!-- Admin Section -->
+  <div id="adminSection" class="hidden">
+    <button onclick="showTab('listings')">Listings</button>
+    <button onclick="showTab('reviews')">Reviews</button>
+    <button onclick="showTab('sellers')">Sellers</button>
+    <button onclick="showTab('settings')">Settings</button>
 
-    <div id="listings" class="tab-content">
+    <!-- Listings Tab -->
+    <div id="listings" class="tab hidden">
       <h3>Manage Listings</h3>
-      <input type="text" placeholder="Title">
-      <textarea placeholder="Description"></textarea>
-      <input type="text" placeholder="Price">
-      <input type="file" multiple>
-      <button class="save">Save Listing</button>
+      <form id="listingForm">
+        <input type="hidden" id="listingId">
+        <input type="text" id="title" placeholder="Title">
+        <textarea id="description" placeholder="Description"></textarea>
+        <input type="text" id="price" placeholder="Price">
+        <input type="text" id="images" placeholder="Image URLs (comma separated)">
+        <input type="text" id="category" placeholder="Category">
+        <button type="button" onclick="saveListing()">Save Listing</button>
+      </form>
+      <h4>Current Listings</h4>
+      <ul id="listingList"></ul>
     </div>
 
-    <div id="reviews" class="tab-content hidden">
+    <!-- Reviews Tab -->
+    <div id="reviews" class="tab hidden">
       <h3>Manage Reviews</h3>
-      <input type="text" placeholder="Reviewer Name">
-      <select>
-        <option>⭐</option>
-        <option>⭐⭐</option>
-        <option>⭐⭐⭐</option>
-        <option>⭐⭐⭐⭐</option>
-        <option>⭐⭐⭐⭐⭐</option>
-      </select>
-      <textarea placeholder="Review text"></textarea>
-      <button class="save">Save Review</button>
+      <p>(Coming next…)</p>
     </div>
 
-    <div id="sellers" class="tab-content hidden">
+    <!-- Sellers Tab -->
+    <div id="sellers" class="tab hidden">
       <h3>Manage Sellers</h3>
-      <input type="text" placeholder="Seller Name">
-      <input type="file">
-      <textarea placeholder="Highlight text"></textarea>
-      <button class="save">Save Seller</button>
+      <p>(Coming next…)</p>
     </div>
 
-    <div id="settings" class="tab-content hidden">
+    <!-- Settings Tab -->
+    <div id="settings" class="tab hidden">
       <h3>Settings</h3>
-      <select>
-        <option>Default</option>
-        <option>Winter Theme</option>
-        <option>Summer Theme</option>
-        <option>Halloween Theme</option>
-      </select>
-      <input type="text" placeholder="Telegram Link">
-      <input type="text" placeholder="Facebook Link">
-      <button class="save">Save Settings</button>
+      <button onclick="logout()">Logout</button>
     </div>
   </div>
 
   <script>
-    function login() {
-      let token = document.getElementById('tokenInput').value;
-      if (token.trim() !== "") {
-        document.getElementById('loginBox').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        // Later we'll use this token for GitHub API calls
-        localStorage.setItem("githubToken", token);
-      } else {
-        alert("Please enter your GitHub Token!");
+    // 🔧 CHANGE THESE
+    const repoOwner = "kaelen-frostclaw";   // e.g. odafex
+    const repoName  = "shop";         // e.g. furry-market
+    const listingsPath = "listings.json";
+    let sha = "";
+    let listings = [];
+
+    // Show correct section
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach(el => el.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function saveToken() {
+      let token = document.getElementById("githubToken").value;
+      if (!token) { alert("Enter token"); return; }
+      localStorage.setItem("githubToken", token);
+      document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("adminSection").classList.remove("hidden");
+      loadListings();
+    }
+
+    function logout() {
+      localStorage.removeItem("githubToken");
+      location.reload();
+    }
+
+    async function loadListings() {
+      let token = localStorage.getItem("githubToken");
+      let apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${listingsPath}`;
+      let response = await fetch(apiUrl, { headers: { Authorization: `token ${token}` } });
+      let fileData = await response.json();
+      if (fileData.content) {
+        listings = JSON.parse(atob(fileData.content));
+        sha = fileData.sha;
+        renderListings();
       }
     }
 
-    function showTab(tabId) {
-      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-      document.querySelectorAll(".tab-content").forEach(content => content.classList.add("hidden"));
-      document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add("active");
-      document.getElementById(tabId).classList.remove("hidden");
+    function renderListings() {
+      let listEl = document.getElementById("listingList");
+      listEl.innerHTML = "";
+      listings.forEach(l => {
+        let li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${l.title}</strong> - ${l.price} <br>
+          <button onclick="editListing(${l.id})">Edit</button>
+          <button onclick="deleteListing(${l.id})">Delete</button>
+        `;
+        listEl.appendChild(li);
+      });
+    }
+
+    async function saveListing() {
+      let token = localStorage.getItem("githubToken");
+      let id = document.getElementById("listingId").value || Date.now();
+      let newListing = {
+        id,
+        title: document.getElementById("title").value,
+        description: document.getElementById("description").value,
+        price: document.getElementById("price").value,
+        images: document.getElementById("images").value.split(",").map(s => s.trim()),
+        category: document.getElementById("category").value
+      };
+
+      let existingIndex = listings.findIndex(l => l.id == id);
+      if (existingIndex >= 0) listings[existingIndex] = newListing;
+      else listings.push(newListing);
+
+      await commitListings(token);
+      resetForm();
+    }
+
+    function editListing(id) {
+      let l = listings.find(x => x.id == id);
+      document.getElementById("listingId").value = l.id;
+      document.getElementById("title").value = l.title;
+      document.getElementById("description").value = l.description;
+      document.getElementById("price").value = l.price;
+      document.getElementById("images").value = l.images.join(", ");
+      document.getElementById("category").value = l.category;
+    }
+
+    async function deleteListing(id) {
+      let token = localStorage.getItem("githubToken");
+      listings = listings.filter(l => l.id != id);
+      await commitListings(token);
+    }
+
+    async function commitListings(token) {
+      let apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${listingsPath}`;
+      let updatedContent = btoa(JSON.stringify(listings, null, 2));
+      await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Update listings",
+          content: updatedContent,
+          sha: sha
+        })
+      });
+      alert("Listings updated!");
+      await loadListings();
+    }
+
+    function resetForm() {
+      document.getElementById("listingForm").reset();
+      document.getElementById("listingId").value = "";
+    }
+
+    // Auto-login if token already saved
+    if (localStorage.getItem("githubToken")) {
+      document.getElementById("loginSection").classList.add("hidden");
+      document.getElementById("adminSection").classList.remove("hidden");
+      loadListings();
     }
   </script>
+
 </body>
 </html>
