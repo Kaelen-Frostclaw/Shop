@@ -1,414 +1,261 @@
-<!--
-FurryShop - Single-file static website (index.html)
-Ready for GitHub Pages. Drop this file as index.html in your repo root.
-
-How to edit products:
-- Easiest: edit the `products` array in the <script> near the bottom.
-- Advanced: replace the products variable with a fetch() from /data/products.json and push to GitHub to update from your phone.
-
-Replace placeholder links (TELEGRAM_LINK, FACEBOOK_LINK) and payment details (CRYPTO_WALLET, BANK_DETAILS) in the JS below.
-
-Features included:
-- Header with Sell to Us (DM), Custom Orders anchor
-- Initial 6 product cards, See More to reveal all
-- Modal with 2-4 image gallery (cover first)
-- Buy button expands to reveal crypto wallet & bank details (copy buttons)
-- Message link under Buy to DM
-- Seller highlights carousel (simple auto-scroll)
-- Trust & Safety toggle reveal
-- Reviews section
-- Footer with Telegram & Facebook
-- Back-to-top paw button
-- Subtle paw cursor trail (CSS) and loading paw animation
-- Seasonal theme controlled by CSS variables at the top (only you change)
-
-
-NOTE: This is a starter template — replace art, images, and links with your real content.
--->
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FurryShop — Buy • Sell • Adopt</title>
-  <meta name="description" content="Fursuits, stickers and furry adopts — curated and trusted.">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Furry Shop</title>
   <style>
-    /* === THEME VARIABLES (edit these as your seasonal switch) === */
-    :root{
-      --bg: #0f172a; /* page bg */
-      --card: #0b1220;
-      --muted: #9aa4c1;
-      --accent1: linear-gradient(90deg,#ff8a00,#ff4ecd);
-      --accent2: #ff8a00;
-      --glass: rgba(255,255,255,0.04);
-      --text: #e6eef8;
-      --radius: 14px;
-      --max-width: 1100px;
+    :root {
+      --theme-bg: linear-gradient(135deg, #ffdde1, #ee9ca7);
+      --theme-accent: #ff69b4;
+      --theme-dark: #333;
     }
-    /* === reset & base === */
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;color:var(--text);background:radial-gradient(circle at 10% 20%, rgba(255,138,0,0.06), transparent 5%), radial-gradient(circle at 90% 80%, rgba(79,70,229,0.04), transparent 10%), var(--bg);-webkit-font-smoothing:antialiased}
-    a{color:inherit;text-decoration:none}
-    img{max-width:100%;display:block}
-    .container{max-width:var(--max-width);margin:28px auto;padding:0 18px}
-
-    /* header */
-    header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:48px;height:48px;border-radius:12px;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-weight:800;color:#091223}
-    .brand h1{font-size:18px;margin:0}
-    nav{display:flex;gap:10px;align-items:center}
-    .btn{background:transparent;border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
-    .btn-cta{background:var(--accent1);padding:10px 16px;color:#071023;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,0.4);transition:transform .18s ease}
-    .btn-ghost{background:var(--glass);border:1px solid rgba(255,255,255,0.03)}
-    .btn-cta:active{transform:translateY(2px)}
-
-    /* grid listings */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:12px;border-radius:12px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-    .card img{border-radius:10px}
-    .card .meta{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-    .title{font-weight:700}
-    .price{font-weight:800}
-
-    /* seller highlights */
-    .sellers{display:flex;gap:12px;overflow:hidden;padding:10px 0}
-    .seller{min-width:160px;background:var(--card);padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:8px;align-items:center}
-    .seller img{width:48px;height:48px;border-radius:10px;object-fit:cover}
-
-    /* sections */
-    section{margin-top:22px}
-    .section-head{display:flex;align-items:center;justify-content:space-between}
-    .muted{color:var(--muted);font-size:13px}
-
-    /* modal */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(3,6,15,0.6);display:none;align-items:center;justify-content:center;z-index:60}
-    .modal{width:92%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:16px;padding:18px;display:flex;gap:16px;color:var(--text);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04)}
-    .gallery{flex:1}
-    .main-img{height:360px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#071225}
-    .thumbs{display:flex;gap:8px;margin-top:10px}
-    .thumbs img{width:60px;height:60px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent}
-    .thumbs img.active{border-color:var(--accent2)}
-    .details{width:360px}
-    .details h2{margin:0 0 6px 0}
-    .desc{color:var(--muted);font-size:14px;line-height:1.45;margin:10px 0}
-    .buy-row{margin-top:12px}
-    .buy-actions{display:flex;gap:8px}
-    .payment-box{background:rgba(255,255,255,0.02);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);margin-top:10px}
-
-    /* trust toggle */
-    .toggle{background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    .toggle .reveal{display:none;margin-top:10px;color:var(--muted)}
-
-    /* footer */
-    footer{margin-top:28px;padding:18px 0;border-top:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
-
-    /* responsive */
-    @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.details{width:320px}.main-img{height:280px}}
-    @media (max-width:640px){.grid{grid-template-columns:1fr}.modal{flex-direction:column}.details{width:100%}.main-img{height:280px}}
-
-    /* paw cursor & back to top */
-    .backtop{position:fixed;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:var(--accent1);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:80}
-
-    /* subtle animated background paw */
-    .loading-paw{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:100;display:none}
-    .paw{width:86px;height:86px;border-radius:18px;background:var(--accent2);display:flex;align-items:center;justify-content:center;color:#081224;font-weight:900}
-
-    /* see-more */
-    .see-more{display:flex;justify-content:center;margin-top:12px}
-
-    /* small niceties */
-    .copy{font-size:13px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);cursor:pointer}
-
-    /* mascot */
-    .mascot{position:fixed;left:18px;bottom:18px;width:86px;height:86px;border-radius:22px;background:linear-gradient(180deg,#fff, #eee);display:flex;align-items:center;justify-content:center;color:#071225;box-shadow:0 10px 30px rgba(0,0,0,0.35);z-index:50}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+    body {
+      background: var(--theme-bg);
+      color: var(--theme-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    header nav button {
+      margin-left: 1rem;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      color: white;
+      background: var(--theme-accent);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    header nav button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+    }
+    .grid {
+      display: grid;
+      gap: 1.2rem;
+      padding: 2rem;
+    }
+    /* 2-column on mobile, 3+ on larger */
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 601px) and (max-width: 1000px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 1001px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px) rotate(-0.5deg);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+    }
+    .card img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+    }
+    .card h3 {
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity:0}
+      to {opacity:1}
+    }
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 90%;
+      padding: 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from {transform: translateY(40px); opacity:0}
+      to {transform: translateY(0); opacity:1}
+    }
+    .modal-gallery {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .modal-gallery img {
+      width: 100%;
+      border-radius: 12px;
+    }
+    .buy-section button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1rem;
+      color: #fff;
+      background: var(--theme-accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    .review-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin: 1rem 0;
+    }
+    .stars {
+      color: gold;
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      padding: 2rem;
+      text-align: center;
+      background: rgba(255,255,255,0.7);
+    }
+    footer a {
+      margin: 0 0.5rem;
+      font-size: 1.2rem;
+    }
+    #backToTop {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--theme-accent);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Furry Shop</h1>
+    <nav>
+      <button>Sell to Us</button>
+      <button>Custom Orders</button>
+    </nav>
+  </header>
 
-<div class="loading-paw" id="loadingPaw"><div class="paw">🐾</div></div>
-
-<header class="container">
-  <div class="brand">
-    <div class="logo">F</div>
-    <div>
-      <h1>FurryShop</h1>
-      <div class="muted" style="font-size:12px">Curated fursuits, stickers & adopts</div>
+  <section class="grid">
+    <div class="card" onclick="openModal()">
+      <img src="https://placekitten.com/400/400" alt="item" />
+      <h3>Neon Tiger Fursuit Head</h3>
     </div>
-  </div>
-  <nav>
-    <button class="btn btn-ghost" id="sellBtn">🐾 Sell to Us</button>
-    <button class="btn btn-cta" id="customBtn">🎨 Custom Order</button>
-  </nav>
-</header>
-
-<main class="container">
-
-  <section>
-    <div class="section-head">
-      <h2>Featured Listings</h2>
-      <div class="muted">Top picks curated by Odafex</div>
-    </div>
-
-    <div class="grid" id="listingsGrid">
-      <!-- JavaScript will inject product cards here -->
-    </div>
-
-    <div class="see-more" id="seeMoreWrap">
-      <button class="btn btn-cta" id="seeMoreBtn">See More</button>
-    </div>
+    <!-- Repeat cards -->
   </section>
 
-  <section>
-    <div class="section-head"><h3>Seller Highlights</h3><div class="muted">Artists we vouch for</div></div>
-    <div class="sellers" id="sellersWrap">
-      <!-- sellers injected -->
-    </div>
-  </section>
-
-  <section id="customOrder">
-    <div class="section-head"><h3>Custom Orders</h3><div class="muted">Send refs via DM — quick replies</div></div>
-    <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
-      <div style="flex:1;min-width:240px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)">
-        <h4>Want a custom fursuit or sticker?</h4>
-        <p class="muted">Click the button below to DM us with refs, measurements and your budget.</p>
-        <div style="margin-top:12px">
-          <button class="btn btn-cta" id="customDM">Message for Custom</button>
+  <!-- Modal -->
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <h2>Neon Tiger Fursuit Head - $600</h2>
+      <div class="modal-gallery">
+        <img src="https://placekitten.com/500/500" alt="gallery img" />
+        <img src="https://placekitten.com/501/500" alt="gallery img" />
+      </div>
+      <p>Condition: Excellent<br/>Includes jaw movement + LED eyes</p>
+      <div class="buy-section">
+        <button onclick="toggleBuy()">BUY</button>
+        <div id="buyOptions" style="display:none;">
+          <p>🪙 Crypto Wallet: 0x123abc… <button onclick="copyText('0x123abc')">Copy</button></p>
+          <p>💳 Bank: Odafex Agency, Acc: 123456789</p>
         </div>
+        <a href="https://t.me/yourlink">💬 Message me directly</a>
       </div>
-      <div style="flex-basis:320px;background:var(--card);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)">
-        <h4>Quick Commission Estimator</h4>
-        <p class="muted">Full suits start from $450. Add-ons increase price.</p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head"><h3>Trust & Safety</h3><div class="muted">Tap to reveal our policy</div></div>
-    <div class="toggle" style="margin-top:10px">
-      <div class="muted">We encourage DMs for final arrangements. Toggle to read full policy.</div>
-      <button class="btn" id="trustToggle" style="margin-top:10px">Reveal</button>
-      <div class="reveal" id="trustReveal">
-        <p>We verify sellers before listing. Always confirm item photos and ask for tracking. No refunds on custom work unless agreed. Avoid sending payment outside the options shown. Use the site-level reviews to judge trustworthiness.</p>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head"><h3>Reviews</h3><div class="muted">What people say about FurryShop</div></div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px">
-      <div class="card"><strong>Juno</strong> <div class="muted">"Fast replies, legit suits."</div></div>
-      <div class="card"><strong>Rex</strong> <div class="muted">"Good packaging, vivid colors."</div></div>
-    </div>
-  </section>
-
-</main>
-
-<footer class="container">
-  <div>© <span id="year"></span> FurryShop — curated with <span style="font-size:18px">🐾</span></div>
-  <div style="display:flex;gap:12px;align-items:center">
-    <a id="telegramFooter" class="btn btn-ghost">Telegram</a>
-    <a id="facebookFooter" class="btn btn-ghost">Facebook</a>
-  </div>
-</footer>
-
-<div class="backtop" id="backTop">🐾</div>
-
-<!-- modal -->
-<div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="gallery">
-      <div class="main-img" id="modalMainImg"> <img src="" alt="product image" id="mainImgEl"> </div>
-      <div class="thumbs" id="thumbsWrap"></div>
-    </div>
-    <div class="details">
-      <h2 id="modalTitle">Title</h2>
-      <div class="muted" id="modalPrice">$0</div>
-      <div class="desc" id="modalDesc">description</div>
-
-      <div class="buy-row">
-        <button class="btn btn-cta" id="buyBtn">BUY</button>
-        <div class="buy-actions" id="buyActions" style="margin-top:8px"></div>
-        <div class="payment-box" id="paymentBox" style="display:none">
-          <div id="cryptoBox">
-            <div style="display:flex;justify-content:space-between;align-items:center"><div class="muted">Crypto Wallet</div><button class="copy" data-copy="crypto">Copy</button></div>
-            <div style="margin-top:8px;font-weight:700" id="cryptoAddr">0x...placeholder</div>
-            <div style="margin-top:8px;color:var(--muted);font-size:13px">(You can paste this into your wallet or scan the QR)</div>
-          </div>
-          <div style="height:8px"></div>
-          <div id="cardBox">
-            <div style="display:flex;justify-content:space-between;align-items:center"><div class="muted">Bank Details</div><button class="copy" data-copy="bank">Copy</button></div>
-            <div style="margin-top:8px;font-weight:700" id="bankDetails">Bank: Your Bank • Acc: 000000000</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px">
-        <a class="btn btn-ghost" id="messageBtn">💬 Message Me Directly</a>
-      </div>
-
-      <div style="margin-top:18px;display:flex;justify-content:space-between;align-items:center">
-        <div class="muted">Item ID: <span id="modalID">#0</span></div>
-        <button class="btn" id="closeModal">Close</button>
-      </div>
+      <button onclick="closeModal()">Close</button>
     </div>
   </div>
-</div>
 
-<!-- mascot (static) -->
-<div class="mascot">🐱‍👤</div>
+  <!-- Reviews -->
+  <section style="padding:2rem;">
+    <h2>Reviews</h2>
+    <div class="review-card">
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+      <p>Great experience, safe and fun community shop!</p>
+    </div>
+    <div class="review-card">
+      <div class="stars">⭐⭐⭐⭐</div>
+      <p>Got my suit quickly, seller is responsive.</p>
+    </div>
+  </section>
 
-<script>
-  // ====== Replace these placeholders with your real links/details ======
-  const TELEGRAM_LINK = 'https://t.me/YourTelegram';
-  const FACEBOOK_LINK = 'https://facebook.com/YourPage';
-  const CRYPTO_WALLET = '0x1234abcd5678EF...';
-  const BANK_DETAILS = 'Bank: Odafex Agency • Acc: 123456789 • Bank: Example Bank';
-  // ==================================================================
+  <footer>
+    <p>Connect with us:</p>
+    <a href="https://t.me/yourlink">Telegram</a>
+    <a href="https://facebook.com/yourlink">Facebook</a>
+    <p>© 2025 Furry Shop</p>
+  </footer>
 
-  // Example products — edit these or load from a separate JSON
-  const products = [
-    {id:1,title:'Neon Tiger Fursuit Head',price:600,desc:'Excellent condition, LED eyes.',images:['https://picsum.photos/id/237/800/600','https://picsum.photos/id/238/800/600'],condition:'Excellent'},
-    {id:2,title:'Mossy Tail (Partial)',price:45,desc:'Soft tail with clip.',images:['https://picsum.photos/id/239/800/600','https://picsum.photos/id/240/800/600','https://picsum.photos/id/241/800/600'],condition:'New'},
-    {id:3,title:'Sticker Pack - Retro',price:8,desc:'10-piece sticker pack.',images:['https://picsum.photos/id/242/800/600']},
-    {id:4,title:'Aqua Fox Full Suit',price:1200,desc:'Custom full suit, well kept.',images:['https://picsum.photos/id/243/800/600','https://picsum.photos/id/244/800/600']},
-    {id:5,title:'Mini Plush Adopt',price:35,desc:'Cute adoptable plush.',images:['https://picsum.photos/id/245/800/600']},
-    {id:6,title:'Vintage Ear Set',price:22,desc:'Handmade ears.',images:['https://picsum.photos/id/246/800/600']},
-    {id:7,title:'Glow Sticker - Pack',price:10,desc:'Glows in dark.',images:['https://picsum.photos/id/247/800/600']},
-    {id:8,title:'Ranger Head',price:500,desc:'Good condition.',images:['https://picsum.photos/id/248/800/600','https://picsum.photos/id/249/800/600']}
-  ];
+  <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'});">🐾</button>
 
-  const sellers = [
-    {name:'TailyArts',img:'https://picsum.photos/id/250/200/200',tag:'Top Maker'},
-    {name:'StickerM8',img:'https://picsum.photos/id/251/200/200',tag:'Sticker Star'},
-    {name:'PlushLab',img:'https://picsum.photos/id/252/200/200',tag:'Plush Pro'}
-  ];
-
-  // DOM refs
-  const listingsGrid = document.getElementById('listingsGrid');
-  const seeMoreBtn = document.getElementById('seeMoreBtn');
-  const seeMoreWrap = document.getElementById('seeMoreWrap');
-  const modalBackdrop = document.getElementById('modalBackdrop');
-  const mainImgEl = document.getElementById('mainImgEl');
-  const thumbsWrap = document.getElementById('thumbsWrap');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalPrice = document.getElementById('modalPrice');
-  const modalDesc = document.getElementById('modalDesc');
-  const modalID = document.getElementById('modalID');
-  const buyBtn = document.getElementById('buyBtn');
-  const paymentBox = document.getElementById('paymentBox');
-  const cryptoAddr = document.getElementById('cryptoAddr');
-  const bankDetails = document.getElementById('bankDetails');
-  const messageBtn = document.getElementById('messageBtn');
-  const trustToggle = document.getElementById('trustToggle');
-  const trustReveal = document.getElementById('trustReveal');
-  const sellersWrap = document.getElementById('sellersWrap');
-
-  let showingCount = 6; // show 6 by default
-
-  function renderListings(){
-    listingsGrid.innerHTML='';
-    products.forEach((p, i) => {
-      const el = document.createElement('div'); el.className='card';
-      el.innerHTML = `
-        <div class="imgwrap"><img src="${p.images[0]}" alt="${p.title}"></div>
-        <div class="meta"><div class="title">${p.title}</div><div class="price">$${p.price}</div></div>
-        <div style="margin-top:8px;color:var(--muted);font-size:13px">${p.condition || ''}</div>
-      `;
-      el.addEventListener('click',()=>openModal(p));
-      if(i<showingCount) listingsGrid.appendChild(el);
-    });
-
-    if(products.length<=showingCount) seeMoreWrap.style.display='none';
-    else seeMoreWrap.style.display='flex';
-  }
-
-  seeMoreBtn.addEventListener('click',()=>{
-    showingCount = products.length;
-    renderListings();
-    seeMoreBtn.style.display='none';
-  });
-
-  function openModal(product){
-    modalBackdrop.style.display='flex';
-    // set content
-    modalTitle.textContent = product.title;
-    modalPrice.textContent = '$' + product.price;
-    modalDesc.textContent = product.desc || '';
-    modalID.textContent = '#' + product.id;
-    // images
-    mainImgEl.src = product.images[0] || '';
-    thumbsWrap.innerHTML='';
-    product.images.forEach((src, idx)=>{
-      const t = document.createElement('img'); t.src=src; if(idx===0) t.classList.add('active');
-      t.addEventListener('click',()=>{ mainImgEl.src=src; document.querySelectorAll('#thumbsWrap img').forEach(x=>x.classList.remove('active')); t.classList.add('active'); });
-      thumbsWrap.appendChild(t);
-    });
-    // set payment details
-    cryptoAddr.textContent = CRYPTO_WALLET;
-    bankDetails.textContent = BANK_DETAILS;
-    paymentBox.style.display='none';
-    // message button links
-    messageBtn.href = TELEGRAM_LINK;
-    messageBtn.onclick = ()=>{ window.open(TELEGRAM_LINK,'_blank'); }
-  }
-
-  document.getElementById('closeModal').addEventListener('click',()=>{ modalBackdrop.style.display='none'; });
-  modalBackdrop.addEventListener('click',(e)=>{ if(e.target===modalBackdrop) modalBackdrop.style.display='none'; });
-
-  // buy expand
-  buyBtn.addEventListener('click',()=>{
-    paymentBox.style.display = paymentBox.style.display === 'none' ? 'block' : 'none';
-  });
-
-  // copy handlers
-  document.querySelectorAll('.copy').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const key = btn.dataset.copy;
-      const text = key==='crypto' ? CRYPTO_WALLET : BANK_DETAILS;
-      navigator.clipboard.writeText(text).then(()=>{ btn.textContent='Copied'; setTimeout(()=>btn.textContent='Copy',1200); }).catch(()=>{alert('Copy failed — use long-press on mobile');});
-    });
-  });
-
-  // header buttons
-  document.getElementById('sellBtn').addEventListener('click',()=>{ window.open(TELEGRAM_LINK,'_blank'); });
-  document.getElementById('customBtn').addEventListener('click',()=>{ document.getElementById('customOrder').scrollIntoView({behavior:'smooth'}); });
-  document.getElementById('customDM').addEventListener('click',()=>{ window.open(TELEGRAM_LINK,'_blank'); });
-
-  // footer links
-  document.getElementById('telegramFooter').addEventListener('click',()=>window.open(TELEGRAM_LINK,'_blank'));
-  document.getElementById('facebookFooter').addEventListener('click',()=>window.open(FACEBOOK_LINK,'_blank'));
-
-  // trust toggle
-  trustToggle.addEventListener('click',()=>{ trustReveal.style.display = trustReveal.style.display==='block' ? 'none' : 'block'; trustToggle.textContent = trustReveal.style.display==='block' ? 'Hide' : 'Reveal'; });
-
-  // sellers
-  function renderSellers(){ sellersWrap.innerHTML=''; sellers.forEach(s=>{ const el=document.createElement('div'); el.className='seller'; el.innerHTML=`<img src="${s.img}"><div><strong>${s.name}</strong><div class="muted">${s.tag}</div></div>`; sellersWrap.appendChild(el); }); }
-
-  // back to top
-  document.getElementById('backTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-
-  // year
-  document.getElementById('year').textContent = new Date().getFullYear();
-
-  // initial render
-  renderListings(); renderSellers();
-
-  // small polish: show loading paw briefly
-  const loading = document.getElementById('loadingPaw'); loading.style.display='block'; setTimeout(()=>loading.style.display='none',800);
-
-  // mobile-friendly: enable copying inside modal even after it is opened
-  // ensure copy buttons work: delegate since they were in modal
-  document.body.addEventListener('click', (e)=>{
-    if(e.target && e.target.matches && e.target.matches('.copy')){
-      const key = e.target.dataset.copy;
-      const text = key==='crypto' ? CRYPTO_WALLET : BANK_DETAILS;
-      navigator.clipboard.writeText(text).then(()=>{ e.target.textContent='Copied'; setTimeout(()=>e.target.textContent='Copy',1200); }).catch(()=>{alert('Copy failed — use long-press on mobile');});
+  <script>
+    function openModal(){
+      document.getElementById('productModal').style.display='flex';
     }
-  });
-
-</script>
+    function closeModal(){
+      document.getElementById('productModal').style.display='none';
+    }
+    function toggleBuy(){
+      let box=document.getElementById('buyOptions');
+      box.style.display = (box.style.display==='none') ? 'block' : 'none';
+    }
+    function copyText(txt){
+      navigator.clipboard.writeText(txt);
+      alert('Copied: '+txt);
+    }
+  </script>
 </body>
 </html>
